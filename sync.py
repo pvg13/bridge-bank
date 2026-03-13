@@ -203,6 +203,7 @@ def run_sync():
             existing = list(get_transactions(actual.session, account=account))
             already_matched = existing[:]
             added = updated = skipped = 0
+            new_txn = []
 
             for txn in raw:
                 try:
@@ -221,18 +222,20 @@ def run_sync():
                             try:
                                 t = reconcile_transaction(
                                     actual.session, date, account, payee, notes,
-                                    None, amount, cleared=False, already_matched=already_matched
+                                    None, amount, cleared=False, already_matched=already_matched,
+                                    imported_payee=payee
                                 )
                             except Exception as e:
                                 log.warning("reconcile_transaction failed (%s), falling back to create_transaction", e)
                                 t = create_transaction(
                                     actual.session, date, account, payee, notes,
-                                    amount, cleared=False
+                                    amount, cleared=False, imported_payee=payee
                                 )
                             already_matched.append(t)
                             if t.changed():
                                 pending_map[key] = str(t.id)
                                 added += 1
+                                new_txn.append(t)
                                 log.info("Imported pending: %s | %s | %s", date, amount, payee)
                             else:
                                 skipped += 1
@@ -260,28 +263,37 @@ def run_sync():
                                 del pending_map[key]
                                 t = reconcile_transaction(
                                     actual.session, date, account, payee, notes,
-                                    None, amount, cleared=True, already_matched=already_matched
+                                    None, amount, cleared=True, already_matched=already_matched,
+                                    imported_payee=payee
                                 )
                                 already_matched.append(t)
                                 if t.changed():
                                     if ref:
                                         imported_refs.add(ref)
+                                    new_txn.append(t)
                                     added += 1
                         else:
                             t = reconcile_transaction(
                                 actual.session, date, account, payee, notes,
-                                None, amount, cleared=True, already_matched=already_matched
+                                None, amount, cleared=True, already_matched=already_matched,
+                                imported_payee=payee
                             )
                             already_matched.append(t)
                             if t.changed():
                                 if ref:
                                     imported_refs.add(ref)
+                                new_txn.append(t)
                                 added += 1
                             else:
                                 skipped += 1
 
                 except Exception as e:
                     log.warning("Skipping transaction: %s | %s", e, txn)
+
+            try:
+                actual.run_rules(new_txn)
+            except Exception as e:
+                log.error("Error applying Rules. Please check your actual budget rules: " + str(e))
 
             actual.commit()
             log.info("Done: %d added, %d confirmed, %d skipped", added, updated, skipped)

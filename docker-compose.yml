@@ -9,7 +9,7 @@ services:
       - ./requirements.txt:/app/requirements.txt
     working_dir: /app
     command: >
-      bash -c "pip install -q -r requirements.txt && python -u sync.py"
+      bash -c "apt-get update -qq && apt-get install -y -qq git && git pull && pip install -q -r requirements.txt && python -u sync.py"
     environment:
       # --- Actual Budget ---
       ACTUAL_URL: "http://actual-budget:5006"   # URL of your Actual Budget instance

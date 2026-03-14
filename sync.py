@@ -182,6 +182,14 @@ def run_sync():
         date_from = datetime.date.today() - datetime.timedelta(days=30)
         log.info("First run: fetching last 30 days")
 
+    # If pending transactions predate last_sync_date, look back further
+    pending_map = state.get("pending_map", {})
+    if pending_map:
+        earliest_pending = min(datetime.date.fromisoformat(k.split("|")[0]) for k in pending_map)
+        if earliest_pending < date_from:
+            log.info("Pending transactions found before last_sync_date, looking back to %s", earliest_pending)
+            date_from = earliest_pending
+
     try:
         raw = fetch_transactions(account_uid, date_from)
     except requests.HTTPError as e:

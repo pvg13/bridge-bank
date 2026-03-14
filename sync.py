@@ -268,18 +268,13 @@ def run_sync():
                                 updated += 1
                                 log.info("Confirmed pending: %s | %s | %s", date, amount, payee)
                             else:
+                                # Transaction was pending but no longer found in Actual
+                                # (likely locked/reconciled). Skip to avoid duplicate.
                                 del pending_map[key]
-                                t = reconcile_transaction(
-                                    actual.session, date, account, payee, notes,
-                                    None, amount, cleared=True, already_matched=already_matched,
-                                    imported_payee=payee
-                                )
-                                already_matched.append(t)
-                                if t.changed():
-                                    if ref:
-                                        imported_refs.add(ref)
-                                    new_txn.append(t)
-                                    added += 1
+                                if ref:
+                                    imported_refs.add(ref)
+                                skipped += 1
+                                log.info("Skipped already-reconciled pending: %s | %s | %s", date, amount, payee)
                         else:
                             t = reconcile_transaction(
                                 actual.session, date, account, payee, notes,

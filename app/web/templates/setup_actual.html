@@ -30,6 +30,9 @@
     <label for="actual_account">Account name</label>
     <input type="text" id="actual_account" name="actual_account" value="{{ actual_account }}" placeholder="Revolut" required>
     <div class="field-hint">Must match exactly the account name in Actual Budget.</div>
+    <label for="bridge_bank_url">Bridge Bank URL</label>
+    <input type="text" id="bridge_bank_url" name="bridge_bank_url" value="{{ bridge_bank_url }}" placeholder="http://192.168.1.100:3002" autocomplete="off" required>
+    <div class="field-hint">The address you use to access this Bridge Bank web UI. Used to redirect you back after bank authorisation.</div>
     <button class="btn btn-primary" type="submit">Continue &rarr;</button>
   </form>
 </div>

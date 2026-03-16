@@ -39,8 +39,8 @@ def start_auth(bank_name: str, bank_country: str) -> dict:
     body = {
         "access":       {"valid_until": valid_until},
         "aspsp":        {"name": bank_name, "country": bank_country},
-        "state":        state_val,
-        "redirect_url": f"{config.BRIDGE_BANK_URL}/callback" if config.BRIDGE_BANK_URL else "https://enablebanking.com/",
+        "state":        f"bridge-bank-auth|{config.BRIDGE_BANK_URL or "http://localhost:3002"}|{state_val}",
+        "redirect_url": "https://bridgebank.app/callback",
         "psu_type":     config.EB_PSU_TYPE,
     }
     db.set_setting("pending_session_state", state_val)
@@ -50,7 +50,9 @@ def start_auth(bank_name: str, bank_country: str) -> dict:
     return {"url": r.json()["url"]}
 
 def complete_auth(code: str, state: str) -> bool:
-    r = requests.post(f"{EB_API}/sessions", json={"code": code, "state": state}, headers=_make_headers())
+    # Strip embedded BRIDGE_BANK_URL from state before sending to Enable Banking
+    clean_state = state.split("|")[-1] if "|" in state else state
+    r = requests.post(f"{EB_API}/sessions", json={"code": code, "state": clean_state}, headers=_make_headers())
     r.raise_for_status()
     data       = r.json()
     session_id = data["session_id"]

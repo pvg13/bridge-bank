@@ -100,6 +100,7 @@ def setup_actual():
         actual_password=config.ACTUAL_PASSWORD,
         actual_sync_id=config.ACTUAL_SYNC_ID,
         actual_account=config.ACTUAL_ACCOUNT,
+        bridge_bank_url=config.BRIDGE_BANK_URL,
         active="actual",
     )
 

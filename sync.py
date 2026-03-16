@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import os, json, time, logging, datetime, decimal, requests, schedule
+import licence
+import licence
 from actual import Actual
 from actual.queries import get_or_create_account, reconcile_transaction, get_transactions, create_transaction
 
@@ -167,6 +169,12 @@ def get_entry_ref(t):
     return t.get("entry_reference") or t.get("transaction_id") or ""
 
 def run_sync():
+    result = licence.validate()
+    if not result["valid"]:
+        msg = f"Licence invalid: {result['error']}"
+        log.error(msg)
+        send_email("Bridge Bank: licence invalid", msg)
+        return
     log.info("Starting sync...")
     state = load_state()
     try:

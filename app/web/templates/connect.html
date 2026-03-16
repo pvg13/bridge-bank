@@ -67,7 +67,7 @@
       <input type="hidden" id="inp-bank-country" name="bank_country">
       <label style="margin-top:0;">Search your bank</label>
       <div style="position:relative;">
-        <input type="text" id="bank-search" placeholder="Type to search 2,500+ European banks..." autocomplete="off" oninput="clearBank(); filterBanks(this.value)" onfocus="showDropdown()">
+        <input type="text" id="bank-search" placeholder="Type to search 2,500+ European banks..." autocomplete="off" oninput="onSearchInput(this.value)" onfocus="showDropdown()">
         <div id="bank-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; background:#0f1420; border:1px solid #253450; border-top:none; border-radius:0 0 6px 6px; max-height:220px; overflow-y:auto; z-index:100; box-shadow:0 4px 12px rgba(0,0,0,0.4);"></div>
       </div>
       <div class="field-hint">Personal accounts only. 2,500+ banks across 29 European countries.</div>
@@ -131,6 +131,15 @@
     document.getElementById('bank-search').value = '';
     document.getElementById('bank-search').dataset.selected = '';
     document.getElementById('connect-btn').disabled = true;
+  }
+
+  function onSearchInput(value) {
+    const search = document.getElementById('bank-search');
+    if (search.dataset.selected === '1') {
+      clearBank();
+      search.value = value.slice(-1);
+    }
+    filterBanks(search.value);
   }
 
   document.addEventListener('click', function(e) {

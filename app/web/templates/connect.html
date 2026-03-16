@@ -67,12 +67,8 @@
       <input type="hidden" id="inp-bank-country" name="bank_country">
       <label style="margin-top:0;">Search your bank</label>
       <div style="position:relative;">
-        <input type="text" id="bank-search" placeholder="Type to search 2,500+ European banks..." autocomplete="off" oninput="filterBanks(this.value)" onfocus="showDropdown()">
+        <input type="text" id="bank-search" placeholder="Type to search 2,500+ European banks..." autocomplete="off" oninput="clearBank(); filterBanks(this.value)" onfocus="showDropdown()">
         <div id="bank-dropdown" style="display:none; position:absolute; top:100%; left:0; right:0; background:#0f1420; border:1px solid #253450; border-top:none; border-radius:0 0 6px 6px; max-height:220px; overflow-y:auto; z-index:100; box-shadow:0 4px 12px rgba(0,0,0,0.4);"></div>
-      </div>
-      <div id="selected-bank" style="display:none; margin-top:0.75rem; padding:10px 12px; background:#080b12; border:1px solid #253450; border-radius:6px; font-size:13px; align-items:center; justify-content:space-between;">
-        <span id="selected-label" style="font-weight:600;color:#e8edf5;"></span>
-        <button type="button" onclick="clearBank()" style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:11px;padding:0;">clear</button>
       </div>
       <div class="field-hint">Personal accounts only. 2,500+ banks across 29 European countries.</div>
       <button class="btn btn-primary" type="submit" id="connect-btn" disabled>Authorise bank &rarr;</button>
@@ -123,11 +119,9 @@
   function selectBank(name, country) {
     document.getElementById('inp-bank-name').value = name;
     document.getElementById('inp-bank-country').value = country;
-    document.getElementById('bank-search').value = '';
+    document.getElementById('bank-search').value = name + ' (' + country + ')';
+    document.getElementById('bank-search').dataset.selected = '1';
     document.getElementById('bank-dropdown').style.display = 'none';
-    const sel = document.getElementById('selected-bank');
-    document.getElementById('selected-label').textContent = name + ' (' + country + ')';
-    sel.style.display = 'flex';
     document.getElementById('connect-btn').disabled = false;
   }
 
@@ -135,7 +129,7 @@
     document.getElementById('inp-bank-name').value = '';
     document.getElementById('inp-bank-country').value = '';
     document.getElementById('bank-search').value = '';
-    document.getElementById('selected-bank').style.display = 'none';
+    document.getElementById('bank-search').dataset.selected = '';
     document.getElementById('connect-btn').disabled = true;
   }
 

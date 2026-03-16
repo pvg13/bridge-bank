@@ -12,32 +12,18 @@
 {% block content %}
 <div class="card">
   <div class="card-title">Enable Banking</div>
-  <div class="card-sub">Step 2 of 4 — your Enable Banking application details</div>
+  <div class="card-sub">Step 2 of 5 — your Enable Banking application details</div>
   {% if error %}
     <div class="alert alert-error">{{ error }}</div>
   {% endif %}
   <form method="POST">
     <label for="eb_app_id" style="margin-top:0;">Application ID</label>
     <input type="text" id="eb_app_id" name="eb_app_id" value="{{ eb_app_id }}" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off" required>
-    <div class="field-hint">From your <a href="https://enablebanking.com/" target="_blank">Enable Banking dashboard</a> under Applications.</div>
-    <div class="field-row" style="margin-top:0;">
-      <div>
-        <label for="eb_bank_name">Bank name</label>
-        <input type="text" id="eb_bank_name" name="eb_bank_name" value="{{ eb_bank_name }}" placeholder="e.g. Revolut" required>
-      </div>
-      <div>
-        <label for="eb_bank_country">Country</label>
-        <select id="eb_bank_country" name="eb_bank_country">
-          {% for code, name in countries %}
-            <option value="{{ code }}" {% if code == eb_bank_country %}selected{% endif %}>{{ name }} ({{ code }})</option>
-          {% endfor %}
-        </select>
-      </div>
-    </div>
+    <div class="field-hint">From your <a href="https://enablebanking.com/" target="_blank">Enable Banking dashboard</a> under Applications. Your private.pem key file must be placed at <code style="font-size:11px;color:#94a3b8;">/data/private.pem</code>.</div>
     <label for="eb_psu_type">Account type</label>
     <select id="eb_psu_type" name="eb_psu_type">
-      <option value="personal" {% if eb_psu_type == 'personal' %}selected{% endif %}>Personal</option>
-      <option value="business" {% if eb_psu_type == 'business' %}selected{% endif %}>Business</option>
+      <option value="personal" {% if eb_psu_type == "personal" %}selected{% endif %}>Personal</option>
+      <option value="business" {% if eb_psu_type == "business" %}selected{% endif %}>Business</option>
     </select>
     <button class="btn btn-primary" type="submit">Continue &rarr;</button>
   </form>

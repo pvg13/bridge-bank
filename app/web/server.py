@@ -59,25 +59,18 @@ def setup_licence():
 def setup_bank():
     error = None
     if request.method == "POST":
-        app_id      = request.form.get("eb_app_id", "").strip()
-        bank_name   = request.form.get("eb_bank_name", "").strip()
-        bank_country= request.form.get("eb_bank_country", "PT").strip()
-        psu_type    = request.form.get("eb_psu_type", "personal").strip()
-        if not app_id or not bank_name:
-            error = "Application ID and bank name are required."
+        app_id   = request.form.get("eb_app_id", "").strip()
+        psu_type = request.form.get("eb_psu_type", "personal").strip()
+        if not app_id:
+            error = "Application ID is required."
         else:
             config.set("EB_APPLICATION_ID", app_id)
-            config.set("EB_BANK_NAME", bank_name)
-            config.set("EB_BANK_COUNTRY", bank_country)
             config.set("EB_PSU_TYPE", psu_type)
             return redirect(url_for("setup_actual"))
     return render_template("setup_bank.html",
         error=error,
         eb_app_id=config.EB_APPLICATION_ID,
-        eb_bank_name=config.EB_BANK_NAME,
-        eb_bank_country=config.EB_BANK_COUNTRY,
         eb_psu_type=config.EB_PSU_TYPE,
-        countries=COUNTRIES,
         active="bank",
     )
 
@@ -282,6 +275,24 @@ def detect_url():
     scheme = request.headers.get("X-Forwarded-Proto", request.scheme)
     host   = request.headers.get("X-Forwarded-Host", request.host)
     return jsonify({"url": f"{scheme}://{host}"})
+
+# ---------------------------------------------------------------------------
+# Banks
+# ---------------------------------------------------------------------------
+
+_banks_cache = None
+
+@app.route("/banks")
+def banks():
+    global _banks_cache
+    if _banks_cache is None:
+        try:
+            from .. import enablebanking
+            _banks_cache = enablebanking.get_banks()
+        except Exception as e:
+            logger.error("Failed to fetch banks: %s", e)
+            return jsonify([])
+    return jsonify(_banks_cache)
 
 # ---------------------------------------------------------------------------
 # Helpers

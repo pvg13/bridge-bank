@@ -63,3 +63,11 @@ def check_token_expiry():
         return (expiry - datetime.now(timezone.utc)).days
     except Exception:
         return None
+
+def get_banks() -> list:
+    r = requests.get(f"{EB_API}/aspsps", headers=_make_headers())
+    r.raise_for_status()
+    return [
+        {"name": b["name"], "country": b["country"]}
+        for b in r.json().get("aspsps", [])
+    ]

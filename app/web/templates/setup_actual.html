@@ -11,16 +11,13 @@
 {% block content %}
 <div class="card">
   <div class="card-title">Actual Budget</div>
-  <div class="card-sub">Step 3 of 4 — your self-hosted Actual Budget instance</div>
+  <div class="card-sub">Step 2 of 4 — your self-hosted Actual Budget instance</div>
   {% if error %}
     <div class="alert alert-error">{{ error }}</div>
   {% endif %}
   <form method="POST">
     <label for="actual_url" style="margin-top:0;">Actual Budget URL</label>
-    <div style="display:flex; gap:0.5rem; align-items:center;">
-      <input type="text" id="actual_url" name="actual_url" value="{{ actual_url }}" placeholder="http://192.168.1.100:5006" autocomplete="off" required style="margin-bottom:0; flex:1;">
-      <button type="button" onclick="detectUrl()" style="white-space:nowrap; padding:0.5rem 0.75rem; font-size:12px; background:#161d2e; border:1px solid #253450; border-radius:6px; cursor:pointer; color:#e8edf5;">Detect</button>
-    </div>
+    <input type="text" id="actual_url" name="actual_url" value="{{ actual_url }}" placeholder="http://192.168.1.100:5006" autocomplete="off" required>
     <div class="field-hint">The address your server uses to reach Actual Budget.</div>
     <label for="actual_password">Password</label>
     <input type="password" id="actual_password" name="actual_password" value="{{ actual_password }}" placeholder="Your Actual Budget password" required>
@@ -30,17 +27,8 @@
     <label for="actual_account">Account name</label>
     <input type="text" id="actual_account" name="actual_account" value="{{ actual_account }}" placeholder="Revolut" required>
     <div class="field-hint">Must match exactly the account name in Actual Budget.</div>
-    <label for="bridge_bank_url">Bridge Bank URL</label>
-    <input type="text" id="bridge_bank_url" name="bridge_bank_url" value="{{ bridge_bank_url }}" placeholder="http://192.168.1.100:3002" autocomplete="off" required>
-    <div class="field-hint">The address you use to access this Bridge Bank web UI. Used to redirect you back after bank authorisation.</div>
     <button class="btn btn-primary" type="submit">Continue &rarr;</button>
   </form>
 </div>
-<script>
-function detectUrl() {
-  fetch("/api/detect-url").then(r => r.json()).then(d => {
-    document.getElementById("actual_url").value = d.url;
-  });
-}
-</script>
+
 {% endblock %}

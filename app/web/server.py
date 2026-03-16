@@ -100,7 +100,6 @@ def setup_actual():
         actual_password=config.ACTUAL_PASSWORD,
         actual_sync_id=config.ACTUAL_SYNC_ID,
         actual_account=config.ACTUAL_ACCOUNT,
-        bridge_bank_url=config.BRIDGE_BANK_URL,
         active="actual",
     )
 
@@ -233,7 +232,7 @@ def status():
         last_sync=last_sync,
         bank_name=config.EB_BANK_NAME,
         actual_account=config.ACTUAL_ACCOUNT,
-        sync_interval_hours=config.SYNC_INTERVAL_HOURS,
+        sync_time=config.SYNC_TIME,
         notify_email=config.NOTIFY_EMAIL,
         activation_usage=act_info["usage"],
         activation_limit=act_info["limit"],

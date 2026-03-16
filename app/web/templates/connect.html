@@ -86,6 +86,8 @@
     try {
       const resp = await fetch("/banks");
       allBanks = await resp.json();
+      const q = document.getElementById("bank-search");
+      if (q && q.value.trim()) filterBanks(q.value);
     } catch(e) { console.error("Failed to load banks", e); }
   }
 
@@ -99,6 +101,7 @@
   }
 
   function filterBanks(query) {
+    if (!allBanks.length) { loadBanks(); return; }
     const dd = document.getElementById("bank-dropdown");
     if (!query.trim()) { dd.style.display = "none"; return; }
     const q = query.toLowerCase();

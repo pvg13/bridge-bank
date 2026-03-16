@@ -41,23 +41,24 @@ Enable Banking is the regulated open banking provider that connects Bridge Bank 
 1. Sign up at [enablebanking.com](https://enablebanking.com)
 2. Go to **API applications** and create a new application — name it `Bridge Bank`
 3. Set the redirect URL to `https://bridgebank.app/callback`
-4. Under **Keys**, select **Generate in the browser** and download your private key — this saves a `.pem` file to your Downloads folder
-5. Click **Link accounts** and link your bank — this activates restricted mode (free, no expiry)
+4. Under **Keys**, select **Generate in the browser** and click **Register** — your application will be created and a `.pem` file will be automatically saved to your Downloads folder. The filename will match your Application ID (e.g. `aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.pem`)
 
 ### 3. Install Bridge Bank
 
-Create a folder, copy your private key, and start the container:
+Create a folder on your server, upload your private key, and start the container:
 ```bash
-mkdir bridge-bank && cd bridge-bank
-mkdir -p data
-cp ~/Downloads/*.pem data/private.pem
+# On your local machine — upload the key to your server
+scp ~/Downloads/your-app-id.pem user@your-server:~/bridge-bank/data/private.pem
+
+# On your server
+mkdir -p ~/bridge-bank && cd ~/bridge-bank
 curl -O https://raw.githubusercontent.com/DAdjadj/bridge-bank/main/docker-compose.yml
 docker compose up -d
 ```
 
 Open **http://your-server-address:3002** in your browser. The setup wizard will guide you through the rest.
 
-> **Note:** Replace `~/Downloads/*.pem` with the actual path to your downloaded key file if needed.
+> **Note:** Replace `your-app-id` with the actual filename of your downloaded `.pem` file, and `user@your-server` with your SSH login.
 
 ---
 

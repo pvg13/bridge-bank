@@ -144,22 +144,38 @@ def connect():
 
     if request.method == "POST":
         action = request.form.get("action")
-        if action == "start":
-            bank_name    = request.form.get("bank_name", config.EB_BANK_NAME).strip()
-            bank_country = request.form.get("bank_country", config.EB_BANK_COUNTRY).strip()
-            try:
-                from .. import enablebanking
-                result   = enablebanking.start_auth(bank_name, bank_country)
-                auth_url = result["url"]
-            except Exception as e:
-                error = f"Could not start bank connection: {e}"
+
+        if action == "save_app_id":
+            app_id = request.form.get("eb_app_id", "").strip()
+            if not app_id:
+                error = "Application ID is required."
+            else:
+                config.set("EB_APPLICATION_ID", app_id)
+                return redirect(url_for("connect"))
+
+        elif action == "start":
+            bank_name    = request.form.get("bank_name", "").strip()
+            bank_country = request.form.get("bank_country", "").strip()
+            if not bank_name or not bank_country:
+                error = "Please select a bank."
+            else:
+                config.set("EB_BANK_NAME", bank_name)
+                config.set("EB_BANK_COUNTRY", bank_country)
+                try:
+                    from .. import enablebanking
+                    result   = enablebanking.start_auth(bank_name, bank_country)
+                    auth_url = result["url"]
+                except Exception as e:
+                    error = f"Could not start bank connection: {e}"
+
         elif action == "cancel":
             db.set_setting("pending_session_id", "")
             return redirect(url_for("connect"))
 
-    tokens    = _get_tokens()
-    days_left = _get_days_left()
-    success   = request.args.get("success")
+    tokens     = _get_tokens()
+    days_left  = _get_days_left()
+    success    = request.args.get("success")
+    has_app_id = bool(config.EB_APPLICATION_ID)
 
     return render_template("connect.html",
         error=error,
@@ -167,8 +183,8 @@ def connect():
         auth_url=auth_url,
         tokens=tokens,
         days_left=days_left,
-        bank_name=config.EB_BANK_NAME,
-        bank_country=config.EB_BANK_COUNTRY,
+        has_app_id=has_app_id,
+        eb_app_id=config.EB_APPLICATION_ID,
         active="connect",
     )
 

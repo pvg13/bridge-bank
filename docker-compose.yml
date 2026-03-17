@@ -7,12 +7,6 @@ services:
       - .env
     volumes:
       - ./data:/data
+      - ./app:/app/app
     ports:
       - "3002:3000"
-    # Uncomment if Actual Budget is on a named Docker network:
-    # networks:
-    #   - your_actual_network
-
-# networks:
-#   your_actual_network:
-#     external: true

@@ -109,7 +109,7 @@ def run():
     log.info("Starting sync...")
 
     # License check
-    result = license.validate()
+    result = licence.validate()
     if not result["valid"]:
         msg = f"License invalid: {result['error']}"
         log.error(msg)

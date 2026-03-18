@@ -37,12 +37,13 @@ def _load():
     for key in list(g.keys()):
         if key.startswith("_") or not key.isupper():
             continue
-        # env var takes precedence over config file
-        env_val = os.environ.get(key)
-        if env_val is not None:
-            g[key] = env_val
-        elif key in data:
+        # config.json (wizard) takes precedence over env vars
+        if key in data and data[key]:
             g[key] = data[key]
+        else:
+            env_val = os.environ.get(key)
+            if env_val is not None:
+                g[key] = env_val
 
 def set(key: str, value: str):
     """Persist a config value to config.json and update the in-memory global."""

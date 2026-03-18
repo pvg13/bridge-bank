@@ -13,17 +13,27 @@ def _own_names():
     return {n.strip().lower() for n in val.split(",") if n.strip()}
 
 def _make_headers():
-    import jwt, uuid
+    import jwt, uuid, glob
     from cryptography.hazmat.primitives.serialization import load_pem_private_key
-    key_data = open("/data/private.pem", "rb").read()
+    pem_content = db.get_setting("eb_pem_content")
+    if pem_content:
+        key_data = pem_content.encode()
+    else:
+        key_path = "/data/private.pem"
+        if not os.path.exists(key_path):
+            for f in glob.glob("/data/*.pem"):
+                key_path = f
+                break
+        key_data = open(key_path, "rb").read()
+    app_id = db.get_setting("eb_app_id") or config.EB_APPLICATION_ID
     key = load_pem_private_key(key_data, password=None)
     now = int(time.time())
     payload = {
         "iss": "enablebanking.com", "aud": "api.enablebanking.com",
         "iat": now, "exp": now + 3600,
-        "jti": str(uuid.uuid4()), "sub": config.EB_APPLICATION_ID
+        "jti": str(uuid.uuid4()), "sub": app_id
     }
-    token = jwt.encode(payload, key, algorithm="RS256", headers={"kid": config.EB_APPLICATION_ID})
+    token = jwt.encode(payload, key, algorithm="RS256", headers={"kid": app_id})
     return {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
 
 def _load_state():

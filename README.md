@@ -42,9 +42,18 @@ Purchase at [bridgebank.app](https://bridgebank.app). Your key is delivered to y
 Enable Banking is the regulated open banking provider that connects Bridge Bank to your bank.
 
 1. Sign up at [enablebanking.com](https://enablebanking.com)
-2. Go to **API applications** and create a new application — name it `Bridge Bank`
-3. Set the redirect URL to `https://bridgebank.app/callback`
-4. Under **Keys**, select **Generate in the browser** and click **Register** — your application will be created and a `.pem` file will be automatically saved to your Downloads folder. The filename will match your Application ID (e.g. `aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.pem`)
+2. Go to **API applications** and click **Register new application**
+3. Fill in the form:
+   - **Application name:** Bridge Bank
+   - **Allowed redirect URLs:** `https://bridgebank.app/callback`
+   - **Application description:** Connect Actual Budget with my bank
+   - **Email for data protection matters:** your email address
+   - **Privacy URL:** `https://bridgebank.app/privacy`
+   - **Terms URL:** `https://bridgebank.app/terms`
+4. Click **Register** — a `.pem` file will be saved to your Downloads folder. The filename matches your Application ID (e.g. `aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee.pem`). Keep it safe — you'll need it in the setup wizard.
+5. Click **Activate by linking accounts** on your application page
+6. Select your country and bank from the dropdowns and click **Link**
+7. Follow the steps to log in to your bank and approve read-only access — this activates your Enable Banking app
 
 ### 3. Install Bridge Bank
 

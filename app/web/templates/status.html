@@ -177,16 +177,14 @@ fetch('/update/check').then(function(r) { return r.json(); }).then(function(d) {
 async function runSync() {
   const btn = document.getElementById('sync-btn');
   btn.textContent = 'Syncing...';
+  btn.style.opacity = '0.6';
   btn.disabled = true;
   try {
     await fetch('/sync/now', { method: 'POST' });
-    // Poll until sync completes (new log entry appears)
-    var attempts = 0;
+    // Poll until sync finishes (not running anymore)
     var poll = setInterval(function() {
-      attempts++;
-      if (attempts > 60) { clearInterval(poll); location.reload(); return; }
-      fetch('/api/last-sync').then(function(r) { return r.json(); }).then(function(d) {
-        if (d.ran_at && d.ran_at !== '{{ last_sync or "" }}') {
+      fetch('/api/sync-status').then(function(r) { return r.json(); }).then(function(d) {
+        if (!d.running) {
           clearInterval(poll);
           location.reload();
         }
@@ -194,6 +192,7 @@ async function runSync() {
     }, 2000);
   } catch(e) {
     btn.textContent = 'Error — try again';
+    btn.style.opacity = '1';
     btn.disabled = false;
   }
 }

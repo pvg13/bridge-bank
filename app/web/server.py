@@ -471,10 +471,24 @@ def deactivate_license():
 # Sync now
 # ---------------------------------------------------------------------------
 
+_sync_running = False
+
 @app.route("/sync/now", methods=["POST"])
 def sync_now():
-    threading.Thread(target=sync.run, daemon=True).start()
+    global _sync_running
+    _sync_running = True
+    def _run():
+        global _sync_running
+        try:
+            sync.run()
+        finally:
+            _sync_running = False
+    threading.Thread(target=_run, daemon=True).start()
     return jsonify({"ok": True})
+
+@app.route("/api/sync-status")
+def sync_status():
+    return jsonify({"running": _sync_running})
 
 @app.route("/sync/reset", methods=["POST"])
 def sync_reset():

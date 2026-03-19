@@ -83,7 +83,7 @@ def _fetch_transactions(account_uid, date_from):
     return txns
 
 def _parse_date(t):
-    raw = t.get("transaction_date") or t.get("booking_date") or t.get("value_date")
+    raw = t.get("booking_date") or t.get("value_date") or t.get("transaction_date")
     if not raw: raise ValueError("No date")
     return datetime.date.fromisoformat(raw[:10])
 

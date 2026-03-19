@@ -17,12 +17,13 @@ Bridge Bank connects to your EU bank via open banking and imports your transacti
 - **Email notifications** — an alert if something goes wrong, and a warning before your bank session expires
 - **Your data, your machine** — bank data goes directly from Enable Banking to your machine, never our servers
 - **Lightweight** — runs as a single Docker container
+- **Runs anywhere** — supports x86, Raspberry Pi, and other ARM devices out of the box
 
 ---
 
 ## Requirements
 
-- Docker and Docker Compose
+- Docker and Docker Compose (runs on x86, Raspberry Pi, and other ARM devices)
 - A free [Enable Banking](https://enablebanking.com/) account
 - A self-hosted [Actual Budget](https://actualbudget.org/) instance
 - A Bridge Bank licence key — [buy one at bridgebank.app](https://bridgebank.app)

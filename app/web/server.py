@@ -418,7 +418,7 @@ def status():
             try:
                 t1 = datetime.fromisoformat(current_run[-1]["ran_at"])
                 t2 = datetime.fromisoformat(r["ran_at"])
-                if abs((t1 - t2).total_seconds()) < 30:
+                if abs((t1 - t2).total_seconds()) < 5:
                     current_run.append(r)
                 else:
                     runs.append(current_run)

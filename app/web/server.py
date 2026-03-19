@@ -406,14 +406,20 @@ def status():
 
     # Fun stats
     import random
-    streak_rows = db.get_recent_syncs(limit=100)
+    all_syncs = db.get_recent_syncs(limit=9999)
+    # Streak: count how many of the last sync runs had at least one success
     streak = 0
-    for r in streak_rows:
+    seen_success = False
+    for r in db.get_recent_syncs(limit=200):
         if r["status"] == "success":
-            streak += 1
-        else:
-            break
-    total_tx = sum(r.get("tx_count", 0) for r in db.get_recent_syncs(limit=9999))
+            if not seen_success:
+                streak += 1
+                seen_success = True
+        elif r["status"] == "failure":
+            if not seen_success:
+                break
+            seen_success = False
+    total_tx = sum(r.get("tx_count", 0) for r in all_syncs if r["status"] == "success")
 
     fun_messages = [
         "Your finances are in good hands.",

@@ -190,7 +190,7 @@ def _sync_account(account, state):
                             try:
                                 t = reconcile_transaction(
                                     actual.session, date, account_obj, payee, notes,
-                                    None, amount, cleared=False,
+                                    None, amount, imported_id=ref or None, cleared=False,
                                     already_matched=already_matched
                                 )
                             except Exception:
@@ -226,7 +226,7 @@ def _sync_account(account, state):
                         else:
                             t = reconcile_transaction(
                                 actual.session, date, account_obj, payee, notes,
-                                None, amount, cleared=True,
+                                None, amount, imported_id=ref or None, cleared=True,
                                 already_matched=already_matched
                             )
                             already_matched.append(t)

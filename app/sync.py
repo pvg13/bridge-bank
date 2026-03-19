@@ -290,25 +290,22 @@ def run():
             success, added, msg = _sync_account(account, state)
             if success:
                 total_added += added
+                db.log_sync("success", tx_count=added, message=bank_label)
             else:
-                errors.append(f"{bank_label}: {msg}")
+                errors.append(msg)
+                db.log_sync("failure", tx_count=0, message=msg)
         except Exception as e:
             log.error("Unexpected error syncing %s: %s", bank_label, e)
             errors.append(f"{bank_label}: {e}")
+            db.log_sync("failure", tx_count=0, message=f"{bank_label}: {e}")
 
     _save_state(state)
 
-    success_count = len(all_accounts) - len(errors)
-    if errors and success_count == 0:
-        msg = f"Sync failed. Errors: {'; '.join(errors)}"
-        db.log_sync("failure", tx_count=0, message=msg)
-        email_notify.send_failure(msg)
+    if errors and len(errors) == len(all_accounts):
+        email_notify.send_failure("; ".join(errors))
     elif errors:
-        msg = f"{success_count} account(s) synced ({total_added} transactions). Failed: {'; '.join(errors)}"
-        db.log_sync("partial", tx_count=total_added, message=msg)
-        email_notify.send_failure(msg)
+        email_notify.send_failure(f"{total_added} transactions synced. Failed: {'; '.join(errors)}")
     else:
-        db.log_sync("success", tx_count=total_added)
         email_notify.send_success(total_added)
 
     # Check for updates silently

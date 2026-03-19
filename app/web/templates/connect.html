@@ -94,12 +94,12 @@
       <input type="hidden" name="action" value="start">
       <input type="hidden" id="inp-bank-name" name="bank_name">
       <input type="hidden" id="inp-bank-country" name="bank_country">
-      <label style="margin-top:0;">Actual Budget account</label>
-      <input type="text" name="actual_account" id="actual-account-input" placeholder="e.g. Revolut" required oninput="checkReady()">
-      <div class="field-hint">The name of the account in Actual Budget where transactions will be synced.</div>
-      <label>Start syncing from</label>
+      <label style="margin-top:0;">Start syncing from</label>
       <input type="date" name="start_sync_date" id="start-date-input" value="{{ today }}" required>
       <div class="field-hint">Only transactions from this date forward will be imported for this bank.</div>
+      <label>Actual Budget account</label>
+      <input type="text" name="actual_account" id="actual-account-input" placeholder="e.g. Revolut" required oninput="checkReady()">
+      <div class="field-hint">The name of the account in Actual Budget where transactions will be synced.</div>
       <label>Search your bank</label>
       <div style="position:relative;">
         <input type="text" id="bank-search" placeholder="Type to search 2,500+ European banks..." autocomplete="off" oninput="filterBanks(this.value)" onfocus="showDropdown()">

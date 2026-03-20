@@ -9,3 +9,14 @@ services:
       - .:/compose:ro
     ports:
       - "3002:3000"
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: bridge-bank-watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --cleanup --interval 86400 --http-api-update bridge-bank
+    environment:
+      - WATCHTOWER_LOG_LEVEL=warn
+      - WATCHTOWER_HTTP_API_TOKEN=bridge-bank-update

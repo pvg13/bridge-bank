@@ -601,7 +601,6 @@ def status():
         page=log_data["page"],
         total_pages=log_data["total_pages"],
         active="status",
-        update_mode=db.get_setting("update_mode"),
         update_available=db.get_setting("update_available") == "1",
         total_tx=total_tx,
         streak=streak,
@@ -725,12 +724,6 @@ def api_logs():
 # Update preference + self-update
 # ---------------------------------------------------------------------------
 
-@app.route("/update/preference", methods=["POST"])
-def update_preference():
-    mode = request.form.get("mode", "manual")
-    db.set_setting("update_mode", mode)
-    return redirect(url_for("status"))
-
 @app.route("/update/check", methods=["GET"])
 def update_check():
     import subprocess, os
@@ -779,66 +772,21 @@ def update_check():
 
 @app.route("/update/run", methods=["POST"])
 def update_run():
-    import subprocess, os
-    if not os.path.exists("/var/run/docker.sock"):
-        return jsonify({"error": "Docker socket not mounted."}), 400
+    import requests as _requests
     try:
-        pull = subprocess.run(
-            ["docker", "pull", IMAGE_NAME],
-            capture_output=True, text=True, timeout=120
+        resp = _requests.get(
+            "http://bridge-bank-watchtower:8080/v1/update",
+            headers={"Authorization": "Bearer bridge-bank-update"},
+            timeout=120,
         )
-        logger.info("Docker pull output: %s", pull.stdout.strip() or pull.stderr.strip())
-        # Check if container is running the pulled image
-        container_image = subprocess.run(
-            ["docker", "inspect", "--format", "{{.Image}}", CONTAINER_NAME],
-            capture_output=True, text=True, timeout=10
-        ).stdout.strip()
-        pulled_image_id = subprocess.run(
-            ["docker", "inspect", "--format", "{{.Id}}", IMAGE_NAME],
-            capture_output=True, text=True, timeout=10
-        ).stdout.strip()
-        image_is_same = "Image is up to date" in pull.stdout or "Image is up to date" in pull.stderr
-        container_current = container_image == pulled_image_id
-        if image_is_same and container_current:
-            return jsonify({"up_to_date": True})
-        logger.info("Recreating container (new_image=%s, container_outdated=%s)", not image_is_same, not container_current)
-        # Find the host path of the compose file from the /compose mount
-        import json as _json
-        mounts_json = subprocess.run(
-            ["docker", "inspect", "--format", "{{json .Mounts}}", CONTAINER_NAME],
-            capture_output=True, text=True, timeout=5
-        ).stdout.strip()
-        compose_host_path = ""
-        for m in _json.loads(mounts_json or "[]"):
-            if m.get("Destination") == "/compose":
-                compose_host_path = m["Source"]
-                break
-        if not compose_host_path:
-            return jsonify({"error": "Compose file mount not found. Make sure the docker-compose.yml directory is mounted at /compose."}), 400
-        # Spawn a helper container to run docker compose up -d. This avoids the
-        # race condition of trying to stop/recreate ourselves from within.
-        # Mount the compose directory at its real host path so that relative
-        # volume paths (./data:/data etc.) resolve to correct host paths.
-        compose_file = f"{compose_host_path}/docker-compose.yml"
-        compose_cmd = f"sleep 2 && docker compose -f '{compose_file}' up -d --force-recreate"
-        helper_cmd = [
-            "docker", "run", "-d", "--rm",
-            "-v", "/var/run/docker.sock:/var/run/docker.sock",
-            "-v", f"{compose_host_path}:{compose_host_path}:ro",
-            IMAGE_NAME,
-            "sh", "-c", compose_cmd,
-        ]
-        logger.info("Update via helper container: %s", " ".join(helper_cmd))
-        result = subprocess.run(helper_cmd, capture_output=True, text=True, timeout=15)
-        if result.returncode != 0:
-            logger.error("Failed to start update helper: %s", result.stderr.strip())
-            return jsonify({"error": "Failed to start update. Try running: docker compose pull && docker compose up -d"}), 500
-        db.set_setting("update_available", "0")
-        return jsonify({"updating": True})
-    except FileNotFoundError:
-        return jsonify({"error": "Docker CLI not available in container."}), 400
+        logger.info("Watchtower update response: %s %s", resp.status_code, resp.text.strip())
+        if resp.status_code == 200:
+            db.set_setting("update_available", "0")
+            return jsonify({"updating": True})
+        return jsonify({"error": "Update service returned an error. Try running: docker compose pull && docker compose up -d"}), 500
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        logger.error("Failed to trigger update: %s", e)
+        return jsonify({"error": "Update service not available. Try running: docker compose pull && docker compose up -d"}), 500
 
 _banks_cache = None
 

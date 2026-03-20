@@ -5,7 +5,6 @@
   <div class="step done"></div>
   <div class="step done"></div>
   <div class="step done"></div>
-  <div class="step done"></div>
   <div class="step {% if all_accounts %}done{% else %}active{% endif %}"></div>
   <div class="step"></div>
 </div>
@@ -22,7 +21,7 @@
 {% if not pem_ready and not auth_url %}
   <div class="card">
     <div class="card-title">Upload your private key</div>
-    <div class="card-sub">Step 5 of 6 — upload your Enable Banking private key file before connecting your bank.</div>
+    <div class="card-sub">Step 4 of 5 — upload your Enable Banking private key file before connecting your bank.</div>
     <form method="POST" enctype="multipart/form-data">
       <input type="hidden" name="action" value="upload_pem">
       <label style="margin-top:0;">Private key file (.pem)</label>
@@ -48,7 +47,7 @@
 {% elif pem_ready and not auth_url %}
   <div class="card">
     <div class="card-title">Connect your bank</div>
-    <div class="card-sub">Step 5 of 6 — search for your bank and authorise read-only access.</div>
+    <div class="card-sub">Step 4 of 5 — search for your bank and authorise read-only access.</div>
 
     <div style="margin-bottom:1rem;padding:10px 14px;background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.2);border-radius:8px;font-size:13px;color:#6ee7b7;display:flex;align-items:center;gap:8px;">
       <span>&#10003;</span> Private key loaded. <a href="/connect/reset-pem" style="color:#94a3b8;font-size:12px;margin-left:auto;">Replace</a>
@@ -56,6 +55,7 @@
 
     {% if all_accounts %}
     <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:#94a3b8;margin-bottom:0.5rem;">Connected accounts ({{ all_accounts|length }}/{{ bank_account_limit }})</div>
+    <div style="font-size:11px;color:#4a5568;margin-bottom:0.75rem;">Reset sync re-imports transactions from the start date. Existing transactions won't be duplicated.</div>
     {% for a in all_accounts %}
     <div style="margin-bottom:0.75rem;padding:12px 14px;border:1px solid #253450;border-radius:8px;">
       <div style="display:flex;justify-content:space-between;align-items:center;">

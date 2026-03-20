@@ -166,7 +166,7 @@ def setup_notifications():
             scheme = request.headers.get("X-Forwarded-Proto", request.scheme)
             host   = request.headers.get("X-Forwarded-Host", request.host)
             config.set("BRIDGE_BANK_URL", f"{scheme}://{host}")
-            return redirect(url_for("setup_sync"))
+            return redirect(url_for("connect"))
     return render_template("setup_notifications.html",
         error=error,
         notify_email=config.NOTIFY_EMAIL,
@@ -205,7 +205,7 @@ def setup_sync():
         if start_date:
             config.set("START_SYNC_DATE", start_date)
         _start_scheduler_if_ready()
-        return redirect(url_for("connect"))
+        return redirect(url_for("status"))
     has_synced = bool(db.get_last_sync())
     return render_template("setup_sync.html",
         error=error,
@@ -670,7 +670,12 @@ def api_logs():
         )
         # docker logs sends output to stderr
         output = result.stdout + result.stderr
-        return jsonify({"logs": output})
+        # Get container image ID as version identifier
+        version = subprocess.run(
+            ["docker", "inspect", "--format", "{{.Image}}", "bridge-bank"],
+            capture_output=True, text=True, timeout=5
+        ).stdout.strip()[:19].replace("sha256:", "")
+        return jsonify({"logs": output, "version": version})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

@@ -291,6 +291,7 @@ def connect():
             bank_country    = request.form.get("bank_country", "").strip()
             actual_account  = request.form.get("actual_account", "").strip()
             start_sync_date = request.form.get("start_sync_date", "").strip()
+            psu_type        = request.form.get("psu_type", "personal").strip()
             if not bank_name or not bank_country:
                 error = "Please select a bank."
             elif not actual_account:
@@ -323,7 +324,7 @@ def connect():
                         host   = request.headers.get("X-Forwarded-Host", request.host)
                         config.set("BRIDGE_BANK_URL", f"{scheme}://{host}")
                         from .. import enablebanking
-                        result   = enablebanking.start_auth(bank_name, bank_country)
+                        result   = enablebanking.start_auth(bank_name, bank_country, psu_type=psu_type)
                         auth_url = result["url"]
                     except Exception as e:
                         error = f"Could not start bank connection: {e}"

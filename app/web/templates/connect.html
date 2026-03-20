@@ -106,6 +106,12 @@
       <label>Actual Budget account</label>
       <input type="text" name="actual_account" id="actual-account-input" placeholder="e.g. Revolut" required oninput="checkReady()">
       <div class="field-hint">The name of the account in Actual Budget where transactions will be synced.</div>
+      <label>Account type</label>
+      <select name="psu_type" id="psu-type" style="width:100%;">
+        <option value="personal" selected>Personal</option>
+        <option value="business">Business / Pro</option>
+      </select>
+      <div class="field-hint">Choose Business / Pro if connecting a Revolut Pro or business bank account.</div>
       <label>Search your bank</label>
       <div style="position:relative;">
         <input type="text" id="bank-search" placeholder="Type to search 2,500+ European banks..." autocomplete="off" oninput="filterBanks(this.value)" onfocus="showDropdown()">
@@ -115,7 +121,7 @@
         <span id="selected-label" style="font-weight:600;color:#e8edf5;"></span>
         <button type="button" onclick="clearBank()" style="background:none;border:none;color:#4a5568;cursor:pointer;font-size:11px;padding:0;">clear</button>
       </div>
-      <div class="field-hint">Personal accounts only. 2,500+ banks across 29 European countries.</div>
+      <div class="field-hint">2,500+ banks across 29 European countries.</div>
       <button class="btn btn-primary" type="submit" id="connect-btn" disabled style="background:var(--surface2); opacity:0.5;">Add bank &rarr;</button>
     </form>
     {% endif %}

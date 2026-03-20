@@ -710,13 +710,25 @@ def update_check():
             timeout=5
         )
         remote_digest = manifest_resp.headers.get("Docker-Content-Digest", "")
+        # Compare against the running container's image, not the locally pulled image.
+        # This detects updates even when the image was pulled but the container wasn't recreated.
+        container_image = subprocess.run(
+            ["docker", "inspect", "--format", "{{.Image}}", "bridge-bank"],
+            capture_output=True, text=True, timeout=10
+        ).stdout.strip()
         local_digest = subprocess.run(
             ["docker", "inspect", "--format", "{{index .RepoDigests 0}}", IMAGE_NAME],
             capture_output=True, text=True, timeout=10
         ).stdout.strip()
         local_sha = local_digest.split("@")[-1] if "@" in local_digest else ""
-        available = remote_digest != local_sha and remote_digest != ""
-        logger.info("Update check: remote=%s local=%s available=%s", remote_digest[:20], local_sha[:20], available)
+        # Also check if the pulled image differs from what the container is running
+        pulled_image_id = subprocess.run(
+            ["docker", "inspect", "--format", "{{.Id}}", IMAGE_NAME],
+            capture_output=True, text=True, timeout=10
+        ).stdout.strip()
+        container_outdated = container_image != pulled_image_id
+        available = (remote_digest != local_sha and remote_digest != "") or container_outdated
+        logger.info("Update check: remote=%s local=%s container_outdated=%s available=%s", remote_digest[:20], local_sha[:20], container_outdated, available)
         return jsonify({"available": available})
     except Exception as e:
         logger.warning("Update check failed: %s", e)
@@ -733,9 +745,20 @@ def update_run():
             capture_output=True, text=True, timeout=120
         )
         logger.info("Docker pull output: %s", pull.stdout.strip() or pull.stderr.strip())
-        if "Image is up to date" in pull.stdout or "Image is up to date" in pull.stderr:
+        # Check if container is running the pulled image
+        container_image = subprocess.run(
+            ["docker", "inspect", "--format", "{{.Image}}", "bridge-bank"],
+            capture_output=True, text=True, timeout=10
+        ).stdout.strip()
+        pulled_image_id = subprocess.run(
+            ["docker", "inspect", "--format", "{{.Id}}", IMAGE_NAME],
+            capture_output=True, text=True, timeout=10
+        ).stdout.strip()
+        image_is_same = "Image is up to date" in pull.stdout or "Image is up to date" in pull.stderr
+        container_current = container_image == pulled_image_id
+        if image_is_same and container_current:
             return jsonify({"up_to_date": True})
-        logger.info("New image pulled — recreating container via docker compose up -d")
+        logger.info("Recreating container (new_image=%s, container_outdated=%s)", not image_is_same, not container_current)
         subprocess.Popen(
             ["sh", "-c", "sleep 2 && cd /compose && docker compose up -d"],
             start_new_session=True

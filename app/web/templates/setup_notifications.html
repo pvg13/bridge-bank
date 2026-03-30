@@ -51,14 +51,13 @@
     <button class="btn btn-primary" type="submit">Continue &rarr;</button>
   </form>
 </div>
-{% if notify_email %}
 <div class="card" style="margin-top:1rem;" id="unsub-card">
   <div class="card-title" style="font-size:14px;">Email preferences</div>
+  <p style="font-size:12px;color:var(--muted);margin:0.25rem 0 0.5rem;">This controls all emails from Bridge Bank — sync notifications, trial reminders, and product updates.</p>
   <p id="unsub-status" style="font-size:13px;color:var(--muted);margin:0.5rem 0;"></p>
   <button type="button" class="btn btn-ghost" id="unsub-btn" onclick="toggleUnsubscribe()" style="font-size:12px;" disabled>Loading...</button>
   <div id="unsub-msg" style="font-size:12px;margin-top:6px;min-height:18px;"></div>
 </div>
-{% endif %}
 <script>
 function togglePw() {
   const f = document.getElementById('smtp_password');
@@ -100,6 +99,14 @@ async function sendTestEmail() {
 }
 var _isUnsub = false;
 async function checkUnsubStatus() {
+  var email = document.getElementById('notify_email').value.trim();
+  if (!email) {
+    var el = document.getElementById('unsub-status');
+    if (el) { el.textContent = 'Enter a notification email above to manage email preferences.'; }
+    var btn = document.getElementById('unsub-btn');
+    if (btn) { btn.style.display = 'none'; }
+    return;
+  }
   try {
     var res = await fetch('/email/unsubscribe-status');
     var data = await res.json();
@@ -116,9 +123,10 @@ function updateUnsubUI() {
   var btn = document.getElementById('unsub-btn');
   var status = document.getElementById('unsub-status');
   if (!btn || !status) return;
+  btn.style.display = '';
   btn.disabled = false;
   if (_isUnsub) {
-    status.textContent = 'You are unsubscribed from all Bridge Bank emails (sync notifications, trial reminders, and product updates).';
+    status.textContent = 'You are unsubscribed from all Bridge Bank emails.';
     btn.textContent = 'Re-enable emails';
     btn.className = 'btn btn-ghost';
     btn.style.color = '';

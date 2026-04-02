@@ -1,3 +1,4 @@
+import json
 import requests
 import hashlib
 import socket
@@ -7,6 +8,20 @@ from . import db
 logger = logging.getLogger(__name__)
 
 LICENCE_BASE = "https://api.bridgebank.app"
+
+
+def _cache_license_info(info):
+    db.set_setting("licence_info_cache", json.dumps(info))
+
+
+def _get_cached_license_info():
+    raw = db.get_setting("licence_info_cache")
+    if raw:
+        try:
+            return json.loads(raw)
+        except (json.JSONDecodeError, TypeError):
+            pass
+    return None
 
 def _get_fingerprint():
     stored = db.get_setting("license_instance_id")
@@ -58,6 +73,8 @@ def deactivate():
         if resp.status_code == 200:
             db.set_setting("licence_key", "")
             db.set_setting("license_instance_id", "")
+            db.set_setting("licence_validated", "")
+            db.set_setting("licence_info_cache", "")
             return {"success": True, "error": None}
         else:
             msg = data.get("error") or "Deactivation failed."
@@ -80,34 +97,41 @@ def validate(key=None):
         )
         data = resp.json()
         if resp.status_code == 200 and data.get("valid"):
+            db.set_setting("licence_validated", "1")
             return {"valid": True, "error": None}
         else:
             msg = data.get("error") or "Invalid license key."
             return {"valid": False, "error": msg}
     except requests.RequestException as e:
         logger.warning("License check failed (network): %s", e)
-        # Allow offline only if this key was previously validated
-        if db.get_setting("licence_key"):
+        # Allow offline if this key was previously activated and validated
+        if db.get_setting("licence_key") and db.get_setting("licence_validated"):
             return {"valid": True, "error": None, "offline": True}
         return {"valid": False, "error": "Could not reach the license server. Check your internet connection."}
 
 def get_activation_info():
     from . import config
     key = config.LICENCE_KEY
+    defaults = {"usage": 0, "limit": 2, "bank_account_limit": 2, "is_trial": False, "expires_at": None}
     if not key:
-        return {"usage": 0, "limit": 2, "bank_account_limit": 2, "is_trial": False, "expires_at": None}
+        return defaults
     try:
         resp = requests.post("https://api.bridgebank.app/info",
             json={"license_key": key}, timeout=5)
         if resp.status_code == 200:
             d = resp.json()
-            return {
+            info = {
                 "usage": d.get("activation_usage", 0),
                 "limit": d.get("activation_limit", 2),
                 "bank_account_limit": d.get("bank_account_limit", 2),
                 "is_trial": d.get("is_trial", False),
                 "expires_at": d.get("expires_at"),
             }
+            _cache_license_info(info)
+            return info
     except Exception:
         pass
-    return {"usage": 0, "limit": 2, "bank_account_limit": 2, "is_trial": False, "expires_at": None}
+    cached = _get_cached_license_info()
+    if cached:
+        return cached
+    return defaults

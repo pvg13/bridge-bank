@@ -194,7 +194,7 @@ def setup_notifications():
         smtp_host     = request.form.get("smtp_host", "").strip()
         notify_on     = request.form.get("notify_on", "all").strip()
         holder_name   = request.form.get("holder_name", "").strip()
-        if not notify_email or not smtp_user or not smtp_password:
+        if notify_on != "never" and (not notify_email or not smtp_user or not smtp_password):
             error = "Notification email and sending credentials are required."
         else:
             config.set("NOTIFY_EMAIL", notify_email)

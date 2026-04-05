@@ -17,18 +17,20 @@
     <div class="alert alert-error">{{ error }}</div>
   {% endif %}
   <form method="POST">
-    <label for="notify_email" style="margin-top:0;">Send notifications to</label>
-    <input type="email" id="notify_email" name="notify_email" value="{{ notify_email }}" placeholder="you@example.com" required>
-    <label for="notify_on">When to notify</label>
-    <select id="notify_on" name="notify_on">
+    <label for="notify_on" style="margin-top:0;">When to notify</label>
+    <select id="notify_on" name="notify_on" onchange="toggleEmailFields()">
       <option value="all" {% if notify_on == "all" %}selected{% endif %}>All syncs</option>
       <option value="errors" {% if notify_on == "errors" %}selected{% endif %}>Errors only</option>
+      <option value="never" {% if notify_on == "never" %}selected{% endif %}>Never</option>
     </select>
+    <div id="email-fields" {% if notify_on == "never" %}hidden{% endif %}>
+    <label for="notify_email">Send notifications to</label>
+    <input type="email" id="notify_email" name="notify_email" value="{{ notify_email }}" placeholder="you@example.com" {% if notify_on != "never" %}required{% endif %}>
     <label for="smtp_user">Email address to send from</label>
-    <input type="text" id="smtp_user" name="smtp_user" value="{{ smtp_user }}" placeholder="you@icloud.com" autocomplete="off" required>
+    <input type="text" id="smtp_user" name="smtp_user" value="{{ smtp_user }}" placeholder="you@icloud.com" autocomplete="off" {% if notify_on != "never" %}required{% endif %}>
     <label for="smtp_password">App-specific password</label>
     <div class="input-wrap">
-      <input type="password" id="smtp_password" name="smtp_password" value="{{ smtp_password }}" placeholder="App-specific password" autocomplete="off" required>
+      <input type="password" id="smtp_password" name="smtp_password" value="{{ smtp_password }}" placeholder="App-specific password" autocomplete="off" {% if notify_on != "never" %}required{% endif %}>
       <button type="button" class="toggle-pw" onclick="togglePw()" id="pw-btn">Show</button>
     </div>
     <div class="field-hint">For iCloud: use an app-specific password from <a href="https://appleid.apple.com" target="_blank">appleid.apple.com</a>. For Gmail: use an app password from your Google account security settings.</div>
@@ -45,13 +47,14 @@
     </div>
     <button type="button" class="btn btn-ghost" id="test-email-btn" onclick="sendTestEmail()" style="font-size:12px;margin-top:0.5rem;">Send test email</button>
     <div id="test-email-msg" style="font-size:12px;margin-top:6px;min-height:18px;"></div>
+    </div>
     <label for="holder_name">Your name on bank transfers <span style="font-size:10px;color:#4a5568;font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
     <input type="text" id="holder_name" name="holder_name" value="{{ holder_name }}" placeholder="e.g. John Doe,JOHN DOE">
     <div class="field-hint">As it appears on bank statements. Comma-separate multiple variations. Used to correctly identify payees on incoming transfers.</div>
     <button class="btn btn-primary" type="submit">Continue &rarr;</button>
   </form>
 </div>
-<div class="card" style="margin-top:1rem;" id="unsub-card">
+<div class="card" style="margin-top:1rem;" id="unsub-card" {% if notify_on == "never" %}hidden{% endif %}>
   <div class="card-title" style="font-size:14px;">Email preferences</div>
   <p style="font-size:12px;color:var(--muted);margin:0.25rem 0 0.5rem;">This controls all emails from Bridge Bank — sync notifications, trial reminders, and product updates.</p>
   <p id="unsub-status" style="font-size:13px;color:var(--muted);margin:0.5rem 0;"></p>
@@ -59,6 +62,14 @@
   <div id="unsub-msg" style="font-size:12px;margin-top:6px;min-height:18px;"></div>
 </div>
 <script>
+function toggleEmailFields() {
+  var isNever = document.getElementById('notify_on').value === 'never';
+  document.getElementById('email-fields').hidden = isNever;
+  document.getElementById('unsub-card').hidden = isNever;
+  ['notify_email', 'smtp_user', 'smtp_password'].forEach(function(id) {
+    document.getElementById(id).required = !isNever;
+  });
+}
 function togglePw() {
   const f = document.getElementById('smtp_password');
   const b = document.getElementById('pw-btn');

@@ -87,7 +87,7 @@ def _friendly_smtp_error(e):
 
 
 def send_success(tx_count: int, details: list = None):
-    if config.NOTIFY_ON == "errors":
+    if config.NOTIFY_ON in ("errors", "never"):
         return
     body = f"Sync completed successfully. {tx_count} transaction(s) imported."
     if details:
@@ -96,6 +96,8 @@ def send_success(tx_count: int, details: list = None):
 
 
 def send_failure(message: str):
+    if config.NOTIFY_ON == "never":
+        return
     send(
         "Bridge Bank: sync failed",
         f"Sync failed with the following error:\n\n{message}\n\nOpen Bridge Bank at {config.BRIDGE_BANK_URL} to check your configuration."
@@ -103,6 +105,8 @@ def send_failure(message: str):
 
 
 def send_partial(successes: list, errors: list):
+    if config.NOTIFY_ON == "never":
+        return
     lines = []
     for s in successes:
         lines.append(f"  ✓ {s}")

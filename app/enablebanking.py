@@ -93,8 +93,6 @@ def check_token_expiry():
         return None
     min_days = None
     for acct in accounts:
-        if acct.get("sync_mode") == "balance":
-            continue
         exp = acct.get("session_expiry")
         if not exp:
             continue

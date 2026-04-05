@@ -1,12 +1,28 @@
 import logging
 import uuid
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 import requests
 from .base import BalanceProvider
 
 log = logging.getLogger(__name__)
 
 ETORO_API = "https://public-api.etoro.com/api/v1"
+
+
+def _usd_to_eur() -> Decimal:
+    """Fetch current USD to EUR rate from Frankfurter (ECB data)."""
+    try:
+        resp = requests.get(
+            "https://api.frankfurter.app/latest?from=USD&to=EUR",
+            timeout=10,
+        )
+        resp.raise_for_status()
+        rate = Decimal(str(resp.json()["rates"]["EUR"]))
+        log.info("USD/EUR rate: %s", rate)
+        return rate
+    except Exception as e:
+        log.warning("Could not fetch USD/EUR rate: %s", e)
+        return Decimal("0.90")
 
 
 class EtoroProvider(BalanceProvider):
@@ -50,14 +66,22 @@ class EtoroProvider(BalanceProvider):
         resp.raise_for_status()
         data = resp.json()
         portfolio = data.get("clientPortfolio", {})
-        # Total Value = Cash + Invested + P&L (matches eToro's portfolio summary)
+
+        # eToro API returns all amounts in USD.
+        # Total Value (USD) = Cash + Invested + Unrealised P&L
         credit = Decimal(str(portfolio.get("credit", 0)))
         unrealized_pnl = Decimal(str(portfolio.get("unrealizedPnL", 0)))
         positions = portfolio.get("positions", [])
         invested = sum(
             Decimal(str(p.get("initialAmountInDollars", 0))) for p in positions
         )
-        return credit + invested + unrealized_pnl
+        total_usd = credit + invested + unrealized_pnl
+
+        # Convert USD to EUR (eToro displays EUR for EU accounts)
+        rate = _usd_to_eur()
+        total_eur = (total_usd * rate).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        log.info("eToro: %s USD * %s = %s EUR", total_usd, rate, total_eur)
+        return total_eur
 
     def get_currency(self, credentials: dict) -> str:
-        return "USD"
+        return "EUR"

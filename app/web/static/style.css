@@ -97,62 +97,13 @@ body.has-sidebar {
     radial-gradient(circle at top left, rgba(59,130,246,0.12), transparent 28%),
     radial-gradient(circle at top right, rgba(99,102,241,0.08), transparent 32%),
     linear-gradient(180deg, #09101c 0%, #080b12 100%);
-  padding: 2rem;
+  padding: 0;
 }
 
 body.has-sidebar .app-shell {
   max-width: 1480px;
-  min-height: calc(100vh - 4rem);
+  min-height: 100vh;
   margin: 0 auto;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent 22%), #0b1020;
-  border: 1px solid rgba(148,163,184,0.12);
-  border-radius: 28px;
-  overflow: hidden;
-  box-shadow: 0 28px 80px rgba(0,0,0,0.42);
-  display: grid;
-  grid-template-rows: 84px minmax(0, 1fr);
-}
-
-body.has-sidebar .chrome-bar {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 24px;
-  padding: 0 28px;
-  background: rgba(11,16,32,0.92);
-  border-bottom: 1px solid rgba(148,163,184,0.1);
-}
-
-body.has-sidebar .traffic-lights { display: flex; gap: 12px; }
-body.has-sidebar .traffic-lights span {
-  width: 14px;
-  height: 14px;
-  border-radius: 999px;
-  box-shadow: inset 0 1px 1px rgba(255,255,255,0.2);
-}
-body.has-sidebar .traffic-lights .red { background: #ff5f57; }
-body.has-sidebar .traffic-lights .yellow { background: #febc2e; }
-body.has-sidebar .traffic-lights .green { background: #28c840; }
-
-body.has-sidebar .address-bar {
-  min-width: min(560px, 100%);
-  padding: 14px 20px;
-  border-radius: 18px;
-  background: rgba(8,11,18,0.72);
-  border: 1px solid rgba(148,163,184,0.14);
-  color: #cbd5e1;
-  text-align: center;
-  font-size: 0.95rem;
-  font-weight: 600;
-}
-
-body.has-sidebar .chrome-meta {
-  justify-self: end;
-  color: #94a3b8;
-  font-size: 0.82rem;
-}
-
-body.has-sidebar .workspace {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
   min-height: 0;
@@ -161,9 +112,12 @@ body.has-sidebar .workspace {
 body.has-sidebar .sidebar {
   display: flex;
   flex-direction: column;
-  padding: 30px 22px;
+  padding: 32px 22px;
   background: linear-gradient(180deg, rgba(59,130,246,0.06), transparent 24%), #0d1321;
   border-right: 1px solid rgba(148,163,184,0.12);
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
 }
 
 body.has-sidebar .sidebar .logo { margin-bottom: 28px; }
@@ -234,7 +188,7 @@ body.has-sidebar .sidebar-footer span {
 
 body.has-sidebar .main-content {
   overflow: auto;
-  padding: 28px 34px 34px;
+  padding: 32px 34px 40px;
   background:
     radial-gradient(circle at top right, rgba(16,185,129,0.05), transparent 26%),
     rgba(8,11,18,0.52);
@@ -248,10 +202,9 @@ body.has-sidebar .wrap {
 
 body.has-sidebar .dashboard-surface {
   min-height: 100%;
-  padding: 24px;
-  border-radius: 24px;
-  border: 1px solid rgba(148,163,184,0.1);
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent 18%), rgba(9,15,26,0.96);
+  padding: 0;
+  border: 0;
+  background: transparent;
 }
 
 body.has-sidebar .footer-nav {
@@ -378,38 +331,25 @@ body.has-sidebar .status-side {
 }
 
 @media (max-width: 1080px) {
-  body.has-sidebar { padding: 18px; }
   body.has-sidebar .app-shell {
-    min-height: calc(100vh - 36px);
-    grid-template-rows: 76px minmax(0, 1fr);
+    min-height: 100vh;
   }
-  body.has-sidebar .workspace { grid-template-columns: 240px minmax(0, 1fr); }
+  body.has-sidebar .app-shell { grid-template-columns: 240px minmax(0, 1fr); }
   body.has-sidebar .main-content { padding: 22px; }
-  body.has-sidebar .dashboard-surface { padding: 18px; }
 }
 
 @media (max-width: 900px) {
-  body.has-sidebar { padding: 0; }
   body.has-sidebar .app-shell {
     max-width: none;
     min-height: 100vh;
-    border-radius: 0;
+    grid-template-columns: 1fr;
   }
-  body.has-sidebar .chrome-bar {
-    grid-template-columns: auto 1fr;
-    gap: 14px;
-  }
-  body.has-sidebar .address-bar { min-width: 0; width: 100%; }
-  body.has-sidebar .chrome-meta { display: none; }
-  body.has-sidebar .workspace { grid-template-columns: 1fr; }
   body.has-sidebar .sidebar { display: none; }
   body.has-sidebar .main-content { padding: 16px; }
-  body.has-sidebar .dashboard-surface { padding: 16px; border-radius: 20px; }
   body.has-sidebar .footer-nav { display: flex; }
   body.has-sidebar .status-layout { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 560px) {
-  body.has-sidebar .chrome-bar { padding: 0 16px; }
-  body.has-sidebar .traffic-lights span { width: 12px; height: 12px; }
+  body.has-sidebar .main-content { padding: 14px; }
 }

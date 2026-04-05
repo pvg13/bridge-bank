@@ -10,67 +10,53 @@
 </head>
 <body class="has-sidebar page-{{ active or 'app' }}">
   <main class="app-shell">
-    <header class="chrome-bar">
-      <div class="traffic-lights" aria-hidden="true">
-        <span class="red"></span>
-        <span class="yellow"></span>
-        <span class="green"></span>
-      </div>
-      <div class="address-bar">
-        http://bridge-bank.local/{% if active == 'license' %}setup{% elif active == 'actual' %}setup/actual{% elif active == 'notifications' %}setup/notifications{% elif active == 'bank' %}bank{% else %}status{% endif %}
-      </div>
-      <div class="chrome-meta">Bridge Bank desktop shell</div>
-    </header>
-
-    <div class="workspace">
-      <aside class="sidebar">
-        <a class="logo" href="/">
-          <div class="logo-mark">&#x27F7;</div>
-          <span class="logo-name">Bridge Bank</span>
+    <aside class="sidebar">
+      <a class="logo" href="/">
+        <div class="logo-mark">&#x27F7;</div>
+        <span class="logo-name">Bridge Bank</span>
+      </a>
+      <nav class="sidebar-nav">
+        <a href="/setup" {% if active == 'license' %}class="active"{% endif %}>
+          <span class="nav-icon">&#x1F511;</span> License
         </a>
-        <nav class="sidebar-nav">
-          <a href="/setup" {% if active == 'license' %}class="active"{% endif %}>
-            <span class="nav-icon">&#x1F511;</span> License
-          </a>
-          <a href="/setup/actual" {% if active == 'actual' %}class="active"{% endif %}>
-            <span class="nav-icon">&#x1F4B0;</span> Actual Budget
-          </a>
-          <a href="/setup/notifications" {% if active == 'notifications' %}class="active"{% endif %}>
-            <span class="nav-icon">&#x2709;</span> Notifications
-          </a>
-          <a href="/bank" {% if active == 'bank' %}class="active"{% endif %}>
-            <span class="nav-icon">&#x1F3E6;</span> Bank
-          </a>
-          <a href="/status" {% if active == 'status' %}class="active"{% endif %}>
-            <span class="nav-icon">&#x2713;</span> Status
-          </a>
-        </nav>
-        <div class="sidebar-footer">
-          <a href="mailto:support@david-alves.com">Support</a>
-          <a href="https://bridgebank.app/privacy" target="_blank">Privacy</a>
-          <a href="https://bridgebank.app/terms" target="_blank">Terms</a>
-          <a href="https://github.com/DAdjadj/bridge-bank" target="_blank">GitHub</a>
-          <span>v{{ app_version }}</span>
-        </div>
-      </aside>
+        <a href="/setup/actual" {% if active == 'actual' %}class="active"{% endif %}>
+          <span class="nav-icon">&#x1F4B0;</span> Actual Budget
+        </a>
+        <a href="/setup/notifications" {% if active == 'notifications' %}class="active"{% endif %}>
+          <span class="nav-icon">&#x2709;</span> Notifications
+        </a>
+        <a href="/bank" {% if active == 'bank' %}class="active"{% endif %}>
+          <span class="nav-icon">&#x1F3E6;</span> Bank
+        </a>
+        <a href="/status" {% if active == 'status' %}class="active"{% endif %}>
+          <span class="nav-icon">&#x2713;</span> Status
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="mailto:support@david-alves.com">Support</a>
+        <a href="https://bridgebank.app/privacy" target="_blank">Privacy</a>
+        <a href="https://bridgebank.app/terms" target="_blank">Terms</a>
+        <a href="https://github.com/DAdjadj/bridge-bank" target="_blank">GitHub</a>
+        <span>v{{ app_version }}</span>
+      </div>
+    </aside>
 
-      <section class="main-content">
-        <nav class="footer-nav">
-          <a href="/setup" {% if active == 'license' %}class="active"{% endif %}>License</a>
-          <a href="/setup/actual" {% if active == 'actual' %}class="active"{% endif %}>Actual Budget</a>
-          <a href="/setup/notifications" {% if active == 'notifications' %}class="active"{% endif %}>Notifications</a>
-          <a href="/bank" {% if active == 'bank' %}class="active"{% endif %}>Bank</a>
-          <a href="/status" {% if active == 'status' %}class="active"{% endif %}>Status</a>
-        </nav>
+    <section class="main-content">
+      <nav class="footer-nav">
+        <a href="/setup" {% if active == 'license' %}class="active"{% endif %}>License</a>
+        <a href="/setup/actual" {% if active == 'actual' %}class="active"{% endif %}>Actual Budget</a>
+        <a href="/setup/notifications" {% if active == 'notifications' %}class="active"{% endif %}>Notifications</a>
+        <a href="/bank" {% if active == 'bank' %}class="active"{% endif %}>Bank</a>
+        <a href="/status" {% if active == 'status' %}class="active"{% endif %}>Status</a>
+      </nav>
 
-        <div class="wrap">
-          <div class="dashboard-surface">
-            {% block steps %}{% endblock %}
-            {% block content %}{% endblock %}
-          </div>
+      <div class="wrap">
+        <div class="dashboard-surface">
+          {% block steps %}{% endblock %}
+          {% block content %}{% endblock %}
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
   </main>
 </body>
 </html>

@@ -215,7 +215,8 @@ def _sync_balance_account(account):
                     encryption_password=config.ACTUAL_ENCRYPTION_PASSWORD or None,
                     file=config.ACTUAL_SYNC_ID, data_dir="/data/actual-cache") as actual:
             account_obj = get_or_create_account(actual.session, actual_name)
-            target_cents = int(target_balance * 100)
+            # actualpy amounts are in whole currency units (e.g. 69.15 = €69.15)
+            target_amount = float(target_balance)
             balance_note = f"{provider.display_name} portfolio value"
 
             # Delete ALL existing transactions in this account, then create
@@ -226,21 +227,20 @@ def _sync_balance_account(account):
                 txn.delete()
 
             tx_count = 0
-            if target_cents != 0:
+            if target_amount != 0:
                 create_transaction(
                     actual.session,
                     datetime.date.today(),
                     account_obj,
                     f"{provider.display_name}",
                     balance_note,
-                    amount=target_cents,
+                    amount=target_amount,
                     cleared=True,
                 )
                 tx_count = 1
 
             actual.commit()
-            log.info("Balance sync %s: set to %s cents (%s EUR)",
-                     bank_label, target_cents, target_balance)
+            log.info("Balance sync %s: set to %s EUR", bank_label, target_amount)
 
     except Exception as e:
         msg = f"{bank_label}: Could not connect to Actual Budget: {e}"

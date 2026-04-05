@@ -1,12 +1,10 @@
 from .base import BalanceProvider
 from .etoro import EtoroProvider
 from .binance import BinanceProvider
-from .coinbase import CoinbaseProvider
 
 PROVIDERS = {
     "etoro": EtoroProvider,
     "binance": BinanceProvider,
-    "coinbase": CoinbaseProvider,
 }
 
 

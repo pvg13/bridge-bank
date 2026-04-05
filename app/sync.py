@@ -209,33 +209,39 @@ def _sync_balance_account(account):
 
     try:
         from actual import Actual
-        from actual.queries import get_or_create_account, create_transaction
+        from actual.queries import get_or_create_account, get_transactions, create_transaction
 
         with Actual(base_url=config.ACTUAL_URL, password=config.ACTUAL_PASSWORD,
                     encryption_password=config.ACTUAL_ENCRYPTION_PASSWORD or None,
                     file=config.ACTUAL_SYNC_ID, data_dir="/data/actual-cache") as actual:
             account_obj = get_or_create_account(actual.session, actual_name)
-            current_balance = int(account_obj.balance or 0)
-            # actualpy stores amounts in cents (minor units)
             target_cents = int(target_balance * 100)
-            adjustment = target_cents - current_balance
 
+            # Find existing balance transactions from this provider and delete them
+            # so we can set a single clean transaction for the current value
+            existing = list(get_transactions(actual.session, account=account_obj))
+            balance_note = f"{provider.display_name} portfolio value"
+            for txn in existing:
+                if txn.notes == balance_note:
+                    actual.session.delete(txn)
+
+            # Create a single transaction for the full portfolio value
             tx_count = 0
-            if adjustment != 0:
+            if target_cents != 0:
                 create_transaction(
                     actual.session,
                     datetime.date.today(),
                     account_obj,
                     f"{provider.display_name}",
-                    f"{provider.display_name} portfolio value",
-                    adjustment,
+                    balance_note,
+                    target_cents,
                     cleared=True,
                 )
                 tx_count = 1
 
             actual.commit()
-            log.info("Balance sync %s: target=%s current=%s adjustment=%s",
-                     bank_label, target_cents, current_balance, adjustment)
+            log.info("Balance sync %s: set to %s cents",
+                     bank_label, target_cents)
 
     except Exception as e:
         msg = f"{bank_label}: Could not connect to Actual Budget: {e}"

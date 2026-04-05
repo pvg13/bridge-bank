@@ -216,31 +216,45 @@ def _sync_balance_account(account):
                     file=config.ACTUAL_SYNC_ID, data_dir="/data/actual-cache") as actual:
             account_obj = get_or_create_account(actual.session, actual_name)
             target_cents = int(target_balance * 100)
-
-            # Delete all previous balance transactions for this provider,
-            # then create a single fresh one with the current value
-            existing = list(get_transactions(actual.session, account=account_obj))
+            current_balance = int(account_obj.balance or 0)
+            adjustment = target_cents - current_balance
             balance_note = f"{provider.display_name} portfolio value"
+
+            # Find existing balance-update transaction and update its amount,
+            # or create one if none exists. This adjusts the running balance
+            # to match the provider's reported value without touching
+            # any manually-entered transactions.
+            existing = list(get_transactions(actual.session, account=account_obj))
+            found = None
             for txn in existing:
                 if txn.notes == balance_note:
-                    txn.delete()
+                    found = txn
+                    break
 
             tx_count = 0
-            if target_cents != 0:
+            if found:
+                # Recalculate: current balance WITHOUT this transaction + new amount = target
+                balance_without = current_balance - int(found.amount or 0)
+                new_amount = target_cents - balance_without
+                if new_amount != int(found.amount or 0):
+                    found.amount = new_amount
+                    found.date = datetime.date.today()
+                    tx_count = 1
+            elif adjustment != 0:
                 create_transaction(
                     actual.session,
                     datetime.date.today(),
                     account_obj,
                     f"{provider.display_name}",
                     balance_note,
-                    target_cents,
+                    adjustment,
                     cleared=True,
                 )
                 tx_count = 1
 
             actual.commit()
-            log.info("Balance sync %s: set to %s cents",
-                     bank_label, target_cents)
+            log.info("Balance sync %s: target=%s current=%s adjustment=%s",
+                     bank_label, target_cents, current_balance, adjustment)
 
     except Exception as e:
         msg = f"{bank_label}: Could not connect to Actual Budget: {e}"

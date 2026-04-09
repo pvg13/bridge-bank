@@ -79,6 +79,13 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
 
           # SSH through Cloudflare Tunnel
+          # Copy docker-compose.yml to server
+          scp -o StrictHostKeyChecking=no \
+              -o ProxyCommand="cloudflared access ssh --hostname ssh-deploy.david-alves.com" \
+              -i ~/.ssh/deploy_key \
+              docker-compose.yml \
+              ${{ secrets.DEPLOY_SSH_USER }}@ssh-deploy.david-alves.com:/opt/docker/bridge-bank/docker-compose.yml
+
           ssh -o StrictHostKeyChecking=no \
               -o ProxyCommand="cloudflared access ssh --hostname ssh-deploy.david-alves.com" \
               -i ~/.ssh/deploy_key \

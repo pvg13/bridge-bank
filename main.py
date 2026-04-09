@@ -16,17 +16,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 def _patch_actualpy():
     try:
         import actual.database as _adb
-        from sqlalchemy import Table, Column, insert
-        from sqlmodel import Session
+        import actual as _actual_mod
+        from sqlalchemy import Column, insert
 
-        _original = _adb.apply_change
-
-        def _patched_apply_change(
-            session: Session,
-            table: Table,
-            table_id: str,
-            values: dict,
-        ) -> None:
+        def _patched_apply_change(session, table, table_id, values):
             set_dict = {
                 (col.name if isinstance(col, Column) else col): val
                 for col, val in values.items()
@@ -38,9 +31,14 @@ def _patch_actualpy():
             )
             session.exec(insert_stmt)
 
+        # Patch both the defining module and the importing module so the name
+        # resolves to the patched version regardless of how it was imported.
         _adb.apply_change = _patched_apply_change
-    except Exception:
-        pass  # actualpy not installed or API changed — sync will fail with original error
+        if hasattr(_actual_mod, 'apply_change'):
+            _actual_mod.apply_change = _patched_apply_change
+        logging.getLogger(__name__).info("actualpy apply_change patched successfully")
+    except Exception as e:
+        logging.getLogger(__name__).warning("Failed to patch actualpy: %s", e)
 
 _patch_actualpy()
 

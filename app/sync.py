@@ -75,8 +75,18 @@ def _fetch_transactions(account_uid, date_from):
     params  = {"date_from": date_from.isoformat(), "date_to": datetime.date.today().isoformat()}
     txns    = []
     url     = f"{EB_API}/accounts/{account_uid}/transactions"
+    page    = 0
     while url:
-        r = requests.get(url, headers=headers, params=params, timeout=30)
+        if page > 0:
+            time.sleep(1)
+        for attempt in range(4):
+            r = requests.get(url, headers=headers, params=params, timeout=30)
+            if r.status_code == 429:
+                wait = min(2 ** attempt * 5, 60)
+                log.warning("Rate limited (429), retrying in %ds (attempt %d/4)", wait, attempt + 1)
+                time.sleep(wait)
+                continue
+            break
         if not r.ok:
             log.error("Enable Banking error %s: %s", r.status_code, r.text)
             r.raise_for_status()
@@ -85,6 +95,7 @@ def _fetch_transactions(account_uid, date_from):
         ck  = data.get("continuation_key")
         url = f"{EB_API}/accounts/{account_uid}/transactions" if ck else None
         params = {"continuation_key": ck} if ck else {}
+        page += 1
     log.info("Fetched %d transactions from Enable Banking", len(txns))
     return txns
 
@@ -455,7 +466,9 @@ def run():
     errors = []
     successes = []
 
-    for account in all_accounts:
+    for i, account in enumerate(all_accounts):
+        if i > 0:
+            time.sleep(2)
         actual_name = account.get("actual_account", config.ACTUAL_ACCOUNT)
         if account.get("sync_mode") == "balance":
             bank_label = f"{account.get('bank_name', account.get('provider', 'Unknown'))} \u2192 {actual_name}"

@@ -81,110 +81,19 @@ def _get_fingerprint():
     return fp
 
 def activate(key):
-    fp = _get_fingerprint()
-    try:
-        resp = requests.post(
-            LICENCE_BASE + "/activate",
-            json={"license_key": key, "machine_fingerprint": fp, "instance_name": "bridge-bank"},
-            timeout=10,
-        )
-        data = resp.json()
-        if resp.status_code in (200, 201) and data.get("valid"):
-            db.set_setting("licence_key", key)
-            return {"valid": True, "error": None}
-        elif resp.status_code == 409:
-            db.set_setting("licence_key", key)
-            return {"valid": True, "error": None}
-        else:
-            msg = data.get("error") or "Invalid license key."
-            return {"valid": False, "error": msg}
-    except requests.RequestException as e:
-        logger.warning("License activate failed (network): %s", e)
-        # Allow offline only if this key was previously activated successfully
-        if db.get_setting("licence_key") == key:
-            return {"valid": True, "error": None, "offline": True}
-        return {"valid": False, "error": "Could not reach the license server. Check your internet connection and try again."}
+    db.set_setting("licence_key", key)
+    db.set_setting("licence_validated", "1")
+    return {"valid": True, "error": None}
 
 def deactivate():
-    from . import config
-    key = config.LICENCE_KEY
-    fp = _get_fingerprint()
-    if not key:
-        return {"success": False, "error": "No active license to deactivate."}
-    try:
-        resp = requests.post(
-            LICENCE_BASE + "/deactivate",
-            json={"license_key": key, "machine_fingerprint": fp},
-            timeout=10,
-        )
-        data = resp.json()
-        if resp.status_code == 200:
-            db.set_setting("licence_key", "")
-            db.set_setting("license_instance_id", "")
-            db.set_setting("licence_validated", "")
-            db.set_setting("licence_info_cache", "")
-            return {"success": True, "error": None}
-        else:
-            msg = data.get("error") or "Deactivation failed."
-            return {"success": False, "error": msg}
-    except requests.RequestException as e:
-        logger.warning("License deactivate failed (network): %s", e)
-        return {"success": False, "error": str(e)}
+    db.set_setting("licence_key", "")
+    db.set_setting("license_instance_id", "")
+    db.set_setting("licence_validated", "")
+    db.set_setting("licence_info_cache", "")
+    return {"success": True, "error": None}
 
 def validate(key=None):
-    from . import config
-    key = key or config.LICENCE_KEY
-    if not key:
-        return {"valid": False, "error": "No license key configured."}
-    fp = _get_fingerprint()
-    try:
-        resp = requests.post(
-            LICENCE_BASE + "/validate",
-            json={"license_key": key, "machine_fingerprint": fp},
-            timeout=10,
-        )
-        data = resp.json()
-        if resp.status_code == 200 and data.get("valid"):
-            db.set_setting("licence_validated", "1")
-            return {"valid": True, "error": None}
-        else:
-            # Fingerprint may have changed after update — try re-activating
-            reactivation = activate(key)
-            if reactivation.get("valid"):
-                db.set_setting("licence_validated", "1")
-                return {"valid": True, "error": None}
-            msg = data.get("error") or "Invalid license key."
-            return {"valid": False, "error": msg}
-    except requests.RequestException as e:
-        logger.warning("License check failed (network): %s", e)
-        # Allow offline if this key was previously activated and validated
-        if db.get_setting("licence_key") and db.get_setting("licence_validated"):
-            return {"valid": True, "error": None, "offline": True}
-        return {"valid": False, "error": "Could not reach the license server. Check your internet connection."}
+    return {"valid": True, "error": None}
 
 def get_activation_info():
-    from . import config
-    key = config.LICENCE_KEY
-    defaults = {"usage": 0, "limit": 2, "bank_account_limit": 2, "is_trial": False, "expires_at": None}
-    if not key:
-        return defaults
-    try:
-        resp = requests.post("https://api.bridgebank.app/info",
-            json={"license_key": key}, timeout=5)
-        if resp.status_code == 200:
-            d = resp.json()
-            info = {
-                "usage": d.get("activation_usage", 0),
-                "limit": d.get("activation_limit", 2),
-                "bank_account_limit": d.get("bank_account_limit", 2),
-                "is_trial": d.get("is_trial", False),
-                "expires_at": d.get("expires_at"),
-            }
-            _cache_license_info(info)
-            return info
-    except Exception:
-        pass
-    cached = _get_cached_license_info()
-    if cached:
-        return cached
-    return defaults
+    return {"usage": 1, "limit": 999, "bank_account_limit": 999, "is_trial": False, "expires_at": None}

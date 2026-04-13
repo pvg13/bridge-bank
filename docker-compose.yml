@@ -1,34 +1,11 @@
 services:
   bridge-bank:
-    image: daalves/bridge-bank:latest
-    container_name: bridge-bank
+    build: .
     restart: unless-stopped
     volumes:
-      - ./data:/data
-      - /var/run/docker.sock:/var/run/docker.sock
-      - .:/compose:ro
-      - ./app/web/server.py:/app/web/server.py:ro
-    ports:
-      - "3002:3000"
-    extra_hosts:
-      - "plex-server:host-gateway"
-    networks:
-      - media
+      - bridge-bank-data:/data
+    expose:
+      - "3000"
 
-  watchtower:
-    image: nickfedor/watchtower
-    container_name: bridge-bank-watchtower
-    restart: unless-stopped
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: --cleanup --interval 86400 --http-api-update --http-api-periodic-polls bridge-bank
-    dns:
-      - 1.1.1.1
-      - 8.8.8.8
-    environment:
-      - WATCHTOWER_LOG_LEVEL=warn
-      - WATCHTOWER_HTTP_API_TOKEN=bridge-bank-update
-
-networks:
-  media:
-    external: true
+volumes:
+  bridge-bank-data:

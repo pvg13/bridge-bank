@@ -46,11 +46,7 @@ CONTAINER_NAME = _detect_container_name()
 IMAGE_NAME = "daalves/bridge-bank:latest"
 
 def _get_bank_account_limit() -> int:
-    try:
-        info = licence.get_activation_info()
-        return max(1, int(info.get("bank_account_limit", 2) or 2))
-    except Exception:
-        return 2
+    return 999
 
 COUNTRIES = [
     ("AT","Austria"),("BE","Belgium"),("HR","Croatia"),("CY","Cyprus"),

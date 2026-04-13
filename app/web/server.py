@@ -65,7 +65,7 @@ COUNTRIES = [
 @app.route("/")
 def index():
     if not config.is_configured():
-        return redirect(url_for("setup_license"))
+        return redirect(url_for("setup_actual"))
     if not config.is_connected():
         return redirect(url_for("bank"))
     return redirect(url_for("status"))

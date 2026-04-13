@@ -67,7 +67,7 @@ def set(key: str, value: str):
 
 def is_configured() -> bool:
     """Returns True if all required fields are set."""
-    return bool(LICENCE_KEY and ACTUAL_URL and ACTUAL_PASSWORD and
+    return bool(ACTUAL_URL and ACTUAL_PASSWORD and
                 ACTUAL_SYNC_ID and ACTUAL_ACCOUNT)
 
 def is_connected() -> bool:
